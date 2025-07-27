@@ -5,10 +5,11 @@ dotenv.config();
 const  app = express();
 import ratelimiterMiddleware from './middlewear/rateLimiter.js';
 import transactionsRoute from './routes/transactionsRoute.js';
+import job from "./config/cron.js";
 
 app.use(express.json());
 app.use(ratelimiterMiddleware); // Applying the rate limiter middleware
-
+if(process.env.NODE_ENV === "production") job.start();
 async function connectToDatabase() {
     try {
         await sql`CREATE TABLE IF NOT EXISTS TRANSACTIONS(
@@ -26,6 +27,9 @@ async function connectToDatabase() {
 }
 
 app.use('/api/transactions', transactionsRoute);
+app.get('/hellth',(req,res)=>{
+    res.send("ok")
+})
 
 connectToDatabase().then(()=>{
     app.listen(process.env.PORT,()=>{
